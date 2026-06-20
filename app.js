@@ -151,19 +151,20 @@
   }
 
   function startPractice() {
-    if (words.length < PRACTICE_COUNT) {
-      alert(`词库至少需要 ${PRACTICE_COUNT} 个单词，当前只有 ${words.length} 个`);
+    if (words.length === 0) {
+      alert('词库为空，请先添加单词');
       return;
     }
 
-    practiceQueue = shuffle(words).slice(0, PRACTICE_COUNT);
+    const n = Math.min(PRACTICE_COUNT, words.length);
+    practiceQueue = shuffle(words).slice(0, n);
     currentIndex = 0;
     practiceResults = [];
 
     $('practice-start').classList.add('hidden');
     $('practice-result').classList.add('hidden');
     $('practice-session').classList.remove('hidden');
-    $('total-count').textContent = PRACTICE_COUNT;
+    $('total-count').textContent = n;
 
     showCurrentWord();
   }
@@ -220,12 +221,12 @@
     $('answer-input').disabled = true;
     $('submit-answer').classList.add('hidden');
     $('next-word').classList.remove('hidden');
-    $('next-word').textContent = currentIndex === PRACTICE_COUNT - 1 ? '查看结果' : '下一题';
+    $('next-word').textContent = currentIndex === practiceQueue.length - 1 ? '查看结果' : '下一题';
   }
 
   function nextWord() {
     currentIndex++;
-    if (currentIndex >= PRACTICE_COUNT) {
+    if (currentIndex >= practiceQueue.length) {
       finishPractice();
     } else {
       showCurrentWord();
@@ -234,7 +235,7 @@
 
   function finishPractice() {
     const correctCount = practiceResults.filter(r => r.correct).length;
-    const score = Math.round((correctCount / PRACTICE_COUNT) * 100);
+    const score = Math.round((correctCount / practiceQueue.length) * 100);
 
     history.push({
       date: Date.now(),
@@ -265,16 +266,28 @@
 
   function drawChart() {
     const canvas = $('chart-canvas');
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const displayW = Math.floor(rect.width * dpr);
+    const displayH = Math.floor(rect.height * dpr);
+    if (canvas.width !== displayW || canvas.height !== displayH) {
+      canvas.width = displayW;
+      canvas.height = displayH;
+    }
     const ctx = canvas.getContext('2d');
     const W = canvas.width;
     const H = canvas.height;
 
-    ctx.clearRect(0, 0, W, H);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const cssW = W / dpr;
+    const cssH = H / dpr;
+
+    ctx.clearRect(0, 0, cssW, cssH);
 
     const recent = history.slice(-10);
     const padding = { top: 30, right: 30, bottom: 40, left: 50 };
-    const chartW = W - padding.left - padding.right;
-    const chartH = H - padding.top - padding.bottom;
+    const chartW = cssW - padding.left - padding.right;
+    const chartH = cssH - padding.top - padding.bottom;
 
     ctx.fillStyle = '#333';
     ctx.font = '13px sans-serif';
@@ -283,7 +296,7 @@
     if (recent.length === 0) {
       ctx.fillStyle = '#999';
       ctx.font = '14px sans-serif';
-      ctx.fillText('暂无练习记录', W / 2, H / 2);
+      ctx.fillText('暂无练习记录', cssW / 2, cssH / 2);
       return;
     }
 
@@ -296,7 +309,7 @@
       const y = padding.top + (chartH / 4) * i;
       ctx.beginPath();
       ctx.moveTo(padding.left, y);
-      ctx.lineTo(W - padding.right, y);
+      ctx.lineTo(cssW - padding.right, y);
       ctx.stroke();
 
       ctx.fillStyle = '#666';
@@ -310,14 +323,14 @@
     ctx.textAlign = 'center';
     recent.forEach((h, i) => {
       const x = padding.left + stepX * i;
-      ctx.fillText(String(i + 1), x, H - padding.bottom + 20);
+      ctx.fillText(String(i + 1), x, cssH - padding.bottom + 20);
     });
 
     ctx.textAlign = 'center';
-    ctx.fillText('练习编号', W / 2, H - 6);
+    ctx.fillText('练习编号', cssW / 2, cssH - 6);
 
     ctx.save();
-    ctx.translate(14, H / 2);
+    ctx.translate(14, cssH / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText('正确率 (%)', 0, 0);
     ctx.restore();
