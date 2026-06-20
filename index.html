@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英语听写练习</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>英语听写练习</h1>
+      <nav>
+        <button class="nav-btn active" data-view="manage">词库管理</button>
+        <button class="nav-btn" data-view="practice">练习模式</button>
+        <button class="nav-btn" data-view="stats">统计分析</button>
+      </nav>
+    </header>
+
+    <section id="view-manage" class="view active">
+      <h2>词库管理</h2>
+      <form id="add-word-form" class="add-form">
+        <div class="form-row">
+          <label>
+            单词
+            <input type="text" id="word-text" required placeholder="例如: apple">
+          </label>
+          <label>
+            中文释义
+            <input type="text" id="word-meaning" required placeholder="例如: 苹果">
+          </label>
+          <label>
+            音频URL
+            <input type="url" id="word-audio" required placeholder="https://...">
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary">添加单词</button>
+      </form>
+      <div class="word-count">词库总数: <span id="word-count">0</span></div>
+      <div class="word-list" id="word-list"></div>
+    </section>
+
+    <section id="view-practice" class="view">
+      <h2>练习模式</h2>
+      <div id="practice-start" class="practice-panel">
+        <p>每次练习随机抽取 10 个单词，听音频后填写单词。</p>
+        <button id="start-practice" class="btn btn-primary btn-large">开始练习</button>
+      </div>
+      <div id="practice-session" class="practice-panel hidden">
+        <div class="progress">
+          进度: <span id="current-index">1</span> / <span id="total-count">10</span>
+        </div>
+        <div class="audio-box">
+          <button id="play-audio" class="btn btn-primary">🔊 播放音频</button>
+          <p class="hint" id="word-hint"></p>
+        </div>
+        <div class="input-box">
+          <input type="text" id="answer-input" placeholder="请输入听到的单词..." autocomplete="off">
+        </div>
+        <div id="answer-result" class="answer-result hidden"></div>
+        <div class="action-row">
+          <button id="submit-answer" class="btn btn-primary">提交答案</button>
+          <button id="next-word" class="btn hidden">下一题</button>
+        </div>
+      </div>
+      <div id="practice-result" class="practice-panel hidden">
+        <h3>练习完成！</h3>
+        <p class="final-score">正确率: <span id="final-score">0</span>%</p>
+        <div id="result-detail" class="result-detail"></div>
+        <button id="restart-practice" class="btn btn-primary">再来一次</button>
+      </div>
+    </section>
+
+    <section id="view-stats" class="view">
+      <h2>统计分析</h2>
+      <div class="stats-grid">
+        <div class="stats-card">
+          <h3>最近10次练习正确率</h3>
+          <canvas id="chart-canvas" width="600" height="300"></canvas>
+        </div>
+        <div class="stats-card">
+          <h3>答错次数 Top 5</h3>
+          <div id="top-mistakes" class="top-mistakes"></div>
+        </div>
+      </div>
+      <div class="stats-card">
+        <h3>练习历史</h3>
+        <div id="history-list" class="history-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <audio id="audio-player" preload="auto"></audio>
+  <script src="app.js"></script>
+</body>
+</html>
